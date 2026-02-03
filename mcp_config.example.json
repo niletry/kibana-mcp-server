@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "kibana": {
+            "command": "python",
+            "args": [
+                "/tmp/kibana-mcp-server/server.py"
+            ],
+            "env": {
+                "KIBANA_URL": "https://logs.example.com",
+                "KIBANA_VERSION": "8.17.1"
+            }
+        }
+    }
+}

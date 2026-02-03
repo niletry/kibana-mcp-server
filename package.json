@@ -1,0 +1,13 @@
+{
+    "name": "kibana-mcp-server",
+    "version": "1.0.0",
+    "description": "MCP Server for Kibana log querying with automatic authentication",
+    "main": "src/kibana_mcp_server/server.py",
+    "scripts": {
+        "start": "python src/kibana_mcp_server/server.py"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "author": "Development Team",
+    "license": "MIT"
+}
