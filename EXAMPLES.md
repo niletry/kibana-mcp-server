@@ -2,18 +2,7 @@
 
 ## 场景 1: 调查生产环境错误
 
-### 步骤 1: 设置凭证
-```json
-{
-  "tool": "kibana_set_credentials",
-  "arguments": {
-    "username": "engineer",
-    "password": "your_password"
-  }
-}
-```
-
-### 步骤 2: 查找最近的错误
+### 步骤 1: 查找最近的错误
 ```json
 {
   "tool": "kibana_search_errors",
@@ -26,7 +15,7 @@
 }
 ```
 
-### 步骤 3: 查看具体服务的最新日志
+### 步骤 2: 查看具体服务的最新日志
 ```json
 {
   "tool": "kibana_get_latest_logs",
@@ -261,4 +250,4 @@
 
 ## 更多示例
 
-查看 `test_server.py` 文件了解更多编程示例。
+查看 README.md 了解更多配置信息和技术细节。

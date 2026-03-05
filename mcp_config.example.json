@@ -7,7 +7,9 @@
             ],
             "env": {
                 "KIBANA_URL": "https://logs.example.com",
-                "KIBANA_VERSION": "8.17.1"
+                "KIBANA_VERSION": "8.17.1",
+                "KIBANA_USERNAME": "your_username",
+                "KIBANA_PASSWORD": "your_password"
             }
         }
     }

@@ -5,14 +5,10 @@
 ## 功能特性
 
 ✅ **自动认证管理**
-- 自动登录并获取 `sid` cookie
+- 自动根据 `KIBANA_USERNAME` 和 `KIBANA_PASSWORD` 环境变量登录
+- 自动获取并管理 `sid` cookie
 - 会话过期自动续期
-- 401 错误自动重新登录
-
-✅ **智能会话保持**
-- 会话有效期 23 小时（避免 24 小时超时）
-- 自动检测会话失效
-- 透明的重新认证
+- 401 错误透明处理并重新登录
 
 ✅ **丰富的查询工具**
 - 日志搜索（关键词查询 + DSL 查询）
@@ -54,33 +50,18 @@ uvx --from /tmp/kibana-mcp-server kibana-mcp-server
       ],
       "env": {
         "KIBANA_URL": "https://logs.example.com",
-        "KIBANA_VERSION": "8.17.1"
+        "KIBANA_VERSION": "8.17.1",
+        "KIBANA_USERNAME": "your_username",
+        "KIBANA_PASSWORD": "your_password"
       }
     }
   }
 }
 ```
 
-## 可用工具
-
-### 1. `kibana_set_credentials`
-设置登录凭证（必须首先调用）
-
-**参数:**
-- `username` - Kibana 用户名
-- `password` - Kibana 密码
-
-**示例:**
-```json
-{
-  "username": "your_username",
-  "password": "your_password"
-}
-```
-
 ---
 
-### 2. `kibana_search_logs`
+### 1. `kibana_search_logs`
 搜索日志（支持关键词搜索和完整 DSL 查询）
 
 **参数:**
@@ -197,15 +178,11 @@ uvx --from /tmp/kibana-mcp-server kibana-mcp-server
 
 ## 使用流程
 
-### 1. 首次使用 - 设置凭证
-```
-使用工具: kibana_set_credentials
-参数:
-  username: "engineer"
-  password: "your_password"
-```
+### 1. 配置环境变量
+在 MCP 配置文件中设置 `KIBANA_USERNAME` 和 `KIBANA_PASSWORD`。
 
 ### 2. 查询日志
+直接调用工具即可，系统会自动处理登录：
 ```
 使用工具: kibana_search_logs
 参数:
@@ -225,7 +202,7 @@ uvx --from /tmp/kibana-mcp-server kibana-mcp-server
 ## 技术细节
 
 ### 认证机制
-1. 用户调用 `kibana_set_credentials` 设置凭证
+1. 系统从环境变量加载 `KIBANA_USERNAME` 和 `KIBANA_PASSWORD`
 2. 首次请求时自动登录 Kibana
 3. 获取并保存 `sid` cookie（Iron 加密格式）
 4. 后续请求自动携带 cookie
@@ -265,11 +242,11 @@ uvx --from /tmp/kibana-mcp-server kibana-mcp-server
 
 ## 故障排查
 
-### 问题: "Kibana 会话未初始化"
-**解决**: 先调用 `kibana_set_credentials` 设置凭证
+### 问题: "Kibana 凭证未配置"
+**解决**: 在 MCP 配置文件（如 `mcp_config.json`）的 `env` 部分设置 `KIBANA_USERNAME` 和 `KIBANA_PASSWORD`。
 
 ### 问题: "登录失败: 401"
-**解决**: 检查用户名和密码是否正确
+**解决**: 检查环境变量中的用户名和密码是否正确
 
 ### 问题: "请求超时"
 **解决**: 

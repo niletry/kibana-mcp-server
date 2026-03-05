@@ -27,6 +27,8 @@ from pydantic import BaseModel, Field
 # 配置
 KIBANA_URL = os.getenv("KIBANA_URL", "https://logs.example.com")
 KIBANA_VERSION = os.getenv("KIBANA_VERSION", "8.17.1")
+KIBANA_USERNAME = os.getenv("KIBANA_USERNAME")
+KIBANA_PASSWORD = os.getenv("KIBANA_PASSWORD")
 SESSION_TIMEOUT = timedelta(hours=23)  # sid cookie 通常 24 小时过期
 
 
@@ -160,18 +162,13 @@ _session: Optional[KibanaSession] = None
 
 
 def get_session() -> KibanaSession:
-    """获取当前会话"""
-    if _session is None:
-        raise Exception("Kibana 会话未初始化，请先设置用户名和密码")
-    return _session
-
-
-def set_credentials(username: str, password: str) -> None:
-    """设置 Kibana 登录凭证"""
+    """获取当前会话，如果未初始化则根据环境变量自动初始化"""
     global _session
-    if _session:
-        asyncio.create_task(_session.close())
-    _session = KibanaSession(username, password)
+    if _session is None:
+        if not KIBANA_USERNAME or not KIBANA_PASSWORD:
+            raise Exception("Kibana 凭证未配置。请设置 KIBANA_USERNAME 和 KIBANA_PASSWORD 环境变量。")
+        _session = KibanaSession(KIBANA_USERNAME, KIBANA_PASSWORD)
+    return _session
 
 
 # 创建 MCP Server
@@ -182,24 +179,6 @@ app = Server("kibana")
 async def list_tools() -> list[Tool]:
     """列出所有可用的工具"""
     return [
-        Tool(
-            name="kibana_set_credentials",
-            description="设置 Kibana 登录凭证（用户名和密码）",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "username": {
-                        "type": "string",
-                        "description": "Kibana 用户名"
-                    },
-                    "password": {
-                        "type": "string",
-                        "description": "Kibana 密码"
-                    }
-                },
-                "required": ["username", "password"]
-            }
-        ),
         Tool(
             name="kibana_search_logs",
             description="搜索 Kibana 日志。支持自定义 Elasticsearch DSL 查询或简单的关键词搜索",
@@ -357,16 +336,7 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     """处理工具调用"""
     
-    if name == "kibana_set_credentials":
-        username = arguments["username"]
-        password = arguments["password"]
-        set_credentials(username, password)
-        return [TextContent(
-            type="text",
-            text=f"✅ Kibana 凭证已设置\n用户名: {username}\n会话将在首次请求时自动建立"
-        )]
-    
-    # 其他工具都需要先验证会话
+    # 获取会话（如果未认证则自动认证）
     session = get_session()
     
     if name == "kibana_search_logs":
